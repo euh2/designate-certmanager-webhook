@@ -1,19 +1,30 @@
-name: Deploy Worklow
+name: Build Docker Image
 
 on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test scenario tags'
   push:
+    branches:
+      - 'euh2-build'
     tags:
-      - '*'
+      - 'v*'
+
+# Required for secrets.GITHUB_TOKEN
+permissions:
+  packages: write
+  contents: read
 
 jobs:
-  deploy:
+  docker:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Build and Push
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: make build ci-push
+      - name: GHCR-Action
+        uses: KuhlTime/ghcr-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
